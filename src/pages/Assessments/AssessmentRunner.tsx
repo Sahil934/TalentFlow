@@ -78,7 +78,7 @@ export default function AssessmentRunner() {
   const { data: assessment } = useAssessmentByJob(jobId);
   const [status, setStatus] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-
+  console.log(answers);
   async function submit(newAnswers: Record<string, any>) {
     if (!assessment || !candidateId) return;
     setAnswers(newAnswers);

@@ -115,7 +115,8 @@ export default function AssessmentPreview({ assessment, readOnly, onSubmit }: Pr
   function isVisible(q: Question, answers: Record<string, any>) {
     if (!q.showIf) return true;
     try {
-      return Function('answers', `return ${q.showIf}`)(answers);
+      // eslint-disable-next-line no-new-func
+      return new Function('answers', `return ${q.showIf}`)(answers);
     } catch {
       return true;
     }

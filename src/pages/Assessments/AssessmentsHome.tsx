@@ -6,11 +6,6 @@ import { Job } from "../../types";
 import Modal from "../../components/Modal";
 import { apiService } from "../../services/api";
 
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-`;
-
 const glow = keyframes`
   0%, 100% { box-shadow: 0 0 20px rgba(14,165,233,0.2); }
   50% { box-shadow: 0 0 40px rgba(14,165,233,0.4); }
