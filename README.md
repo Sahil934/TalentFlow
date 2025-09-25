@@ -1,0 +1,109 @@
+# TalentFlow – Mini Hiring Platform (Front-End Only)
+
+A React + TypeScript application that simulates a hiring platform. It features Jobs management, Candidates pipelines, and Assessments with a mock REST API, full local persistence (IndexedDB), and realistic network latency and error simulation.
+
+## Tech Stack
+- React 18 + TypeScript
+- React Router v6
+- React Query (TanStack Query v3)
+- Styled-Components
+- MSW (Mock Service Worker) – simulating REST API
+- IndexedDB via Dexie – persistence layer
+- react-beautiful-dnd – drag-and-drop
+- react-window – virtualization (candidates list)
+
+## Project Structure
+```
+src/
+  App.tsx                   # App shell + routes
+  index.tsx                 # Entry, MSW boot, seed DB, QueryClient/Router providers
+  components/
+    Modal.tsx
+    AssessmentPreview.tsx   # Renders assessment form (runtime)
+  hooks/
+    useJobs.ts              # Jobs queries & mutations (incl. optimistic reorder)
+    useCandidates.ts        # Candidates queries, updates, timeline
+    useAssessments.ts       # Assessment fetch + save
+  mocks/
+    browser.ts              # MSW worker setup
+    handlers.ts             # REST endpoints with latency & error simulation
+  pages/
+    Jobs/
+      JobsList.tsx          # Jobs board: list, filters, pagination, create/edit, archive, DnD reorder
+      JobDetail.tsx         # Deep link /jobs/:jobId
+    Candidates/
+      CandidatesList.tsx    # Virtualized list (search + stage filter)
+      CandidateProfile.tsx  # /candidates/:id timeline + notes + stage updates
+      CandidatesBoard.tsx   # Kanban board (drag-and-drop stage changes)
+    Assessments/
+      AssessmentBuilder.tsx # Builder with sections/questions + live preview
+      AssessmentRunner.tsx  # Runtime form with validation + submit
+  services/
+    api.ts                  # Client hitting MSW endpoints
+    database.ts             # Dexie DB + write-through utility
+  types/
+    index.ts                # All domain types
+    react-query.d.ts        # Temporary shim until npm install
+  utils/
+    seedData.ts             # Seed 25 jobs, 1000 candidates, 3+ assessments
+public/
+  index.html
+```
+
+## Features Implemented
+- Jobs
+  - List with server-like pagination and filters (title, status, tags)
+  - Create/Edit with validation (title required, unique slug)
+  - Archive/Unarchive
+  - Drag-and-drop reorder with optimistic update + rollback on failure
+  - Deep link to a job at `/jobs/:jobId`
+- Candidates
+  - Virtualized list (1000+) with client-side search and server-like stage filter
+  - Candidate profile `/candidates/:id` with timeline of status changes
+  - Kanban board (drag-and-drop) for stage transitions
+  - Notes with @mentions (render-only with local suggestions)
+- Assessments
+  - Builder per job: add sections and questions for all required types
+  - Live preview renders the assessment as a fillable form
+  - Persist builder state and candidate responses in IndexedDB
+  - Runtime validation rules (required, numeric range, max length)
+
+## What’s Pending / Limitations
+- Conditional question logic is stubbed; can be extended in `components/AssessmentPreview.tsx` using rules.
+- MSW service worker file generation is not executed yet (requires Node/npm). The code calls `worker.start()` in development.
+- Styling can be further refined; current UI focuses on clarity and productivity.
+
+## Getting Started
+1. Install Node.js (v18+) and npm.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the dev server:
+   ```bash
+   npm start
+   ```
+   - MSW will start in development, and the app will seed IndexedDB with initial data on first load.
+4. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## Important Notes
+- All persistence is local (IndexedDB via Dexie). MSW simulates the network and writes through to IndexedDB.
+- Artificial latency (200–1200ms) and error rates (5–15% on write endpoints) are injected in `src/mocks/handlers.ts`.
+- A temporary type shim exists at `src/types/react-query.d.ts` to allow the editor to type-check before installing dependencies. Delete it after `npm install`.
+
+## Deployment
+- Deploy the build folder on Netlify/Vercel.
+- Ensure the service worker path `/mockServiceWorker.js` is served. For MSW in production, a different strategy may be used or MSW disabled.
+
+## Technical Decisions
+- Kept data model in `src/types/index.ts` as the single source of truth.
+- Wrote a `DatabaseService` abstraction over Dexie to simplify seeding and write-through.
+- Used React Query for caching, pagination, and optimistic updates.
+- Structured MSW handlers to mimic the assignment endpoints closely.
+
+## Troubleshooting
+- If you see TypeScript errors like "Cannot find module 'react'" or "react/jsx-runtime", make sure dependencies are installed and TypeScript is using the local `node_modules`.
+- If MSW doesn’t start, ensure the service worker file exists at `/mockServiceWorker.js` (generated by MSW CLI). You can comment out `worker.start()` while developing the data layer directly with Dexie for quick checks.
